@@ -1,0 +1,9 @@
+#!/bin/zsh
+set -e
+TARGET='/Applications/Waves/eMotion LV1/Modules/LV1Bridge_Control.bundle'
+if [[ -d "$TARGET" ]]; then
+  BACKUP="/Library/Application Support/LV1Bridge/Backups/LV1Bridge_Control-$(date +%Y%m%d-%H%M%S).bundle"
+  mkdir -p "${BACKUP:h}"
+  ditto "$TARGET" "$BACKUP"
+fi
+exit 0

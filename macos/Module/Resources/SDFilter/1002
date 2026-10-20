@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<SurfaceDriver>
+    <SurfaceType>LV1 Bridge</SurfaceType>
+    <DriverName>LV1 Bridge</DriverName>
+    <Category>Surface</Category>
+    <IconPath></IconPath>
+    <IsMidiDriver>1</IsMidiDriver>
+    <IsFaderBank>1</IsFaderBank>
+    <PortNameIn>FaderBank In</PortNameIn>
+    <PortNameOut>FaderBank Out</PortNameOut>
+</SurfaceDriver>

@@ -1,0 +1,42 @@
+{
+  "Actions": [
+    {
+      "Icon": "images/key",
+      "Name": "LV1 Control",
+      "States": [
+        {
+          "Image": "images/key",
+          "TitleAlignment": "middle",
+          "FontSize": "16",
+          "TitleColor": "#FFFFFF"
+        },
+        {
+          "Image": "images/key_active",
+          "TitleAlignment": "middle",
+          "FontSize": "16",
+          "TitleColor": "#FFFFFF"
+        }
+      ],
+      "UUID": "com.lv1.faderbank.control",
+      "Controllers": [
+        "Keypad"
+      ]
+    }
+  ],
+  "Author": "LV1 Tools",
+  "CodePathWin": "LV1StreamDeckPlugin.exe",
+  "Description": "Controls LV1 AUX sends and user keys through Fader Bank Bridge, with live session names.",
+  "Name": "LV1 Fader Bank Bridge",
+  "Icon": "images/plugin",
+  "Version": "1.3.0",
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "6.4"
+  }
+}

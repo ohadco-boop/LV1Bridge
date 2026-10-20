@@ -1,0 +1,17 @@
+#!/bin/zsh
+set -e
+CONSOLE_USER=$(stat -f '%Su' /dev/console)
+if [[ "$CONSOLE_USER" != root && -n "$CONSOLE_USER" ]]; then
+  USER_HOME=$(dscl . -read "/Users/$CONSOLE_USER" NFSHomeDirectory | awk '{print $2}')
+  PLUGINS="$USER_HOME/Library/Application Support/com.elgato.StreamDeck/Plugins"
+  mkdir -p "$PLUGINS"
+  # The installer runs as root, even when Stream Deck has never been opened.
+  # Its user data directories must remain writable by the logged-in user.
+  chown "$CONSOLE_USER":staff "${PLUGINS:h}" "$PLUGINS"
+  rm -rf "$PLUGINS/com.lv1.faderbank.sdPlugin"
+  ditto '/Library/Application Support/LV1Bridge/StreamDeck/com.lv1.faderbank.sdPlugin' "$PLUGINS/com.lv1.faderbank.sdPlugin"
+  chown -R "$CONSOLE_USER":staff "$PLUGINS/com.lv1.faderbank.sdPlugin"
+  USER_ID=$(id -u "$CONSOLE_USER")
+  launchctl asuser "$USER_ID" /usr/bin/open -a '/Applications/LV1 Bridge.app' || true
+fi
+exit 0

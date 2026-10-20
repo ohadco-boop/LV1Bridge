@@ -1,0 +1,11 @@
+LV1Bridge_Control_eMotionLV1_IID:
+    name: LV1 Bridge for eMotion LV1
+    retain_tag: LIVE_LV1Bridge_Control
+    depends:
+        - MIDICommunication_eMotionLV1_IID
+    version: 2.1.4
+    Mac:
+        install_folders:
+            - /Applications/Waves/eMotion LV1/Modules
+        install_sources:
+            - LV1Bridge_Control.bundle

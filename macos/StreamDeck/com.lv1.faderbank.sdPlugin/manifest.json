@@ -1,0 +1,45 @@
+{
+  "Actions": [
+    {
+      "Icon": "images/key",
+      "Name": "LV1 Smart Slot",
+      "States": [
+        {
+          "Image": "images/key",
+          "TitleAlignment": "middle",
+          "FontSize": "16",
+          "TitleColor": "#FFFFFF"
+        }
+      ],
+      "UUID": "com.lv1.faderbank.control",
+      "Controllers": [
+        "Keypad"
+      ]
+    }
+  ],
+  "Author": "LV1 Tools",
+  "CodePath": "plugin.html",
+  "Description": "Controls LV1 AUX sends, user keys and live VU meters through LV1 Bridge for macOS.",
+  "Name": "LV1 Fader Bank Bridge",
+  "Icon": "images/plugin",
+  "Version": "2.1.4",
+  "Profiles": [
+    {
+      "Name": "Profiles/LV1 Bridge XL",
+      "DeviceType": 2,
+      "Readonly": false,
+      "AutoInstall": true,
+      "DontAutoSwitchWhenInstalled": true
+    }
+  ],
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "13.0"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "6.4"
+  }
+}
