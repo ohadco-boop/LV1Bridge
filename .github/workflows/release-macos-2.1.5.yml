@@ -1,0 +1,52 @@
+name: Publish macOS 2.1.5
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'release-assets/macos-v2.1.5/**'
+      - '.github/workflows/release-macos-2.1.5.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: release-macos-v2.1.5
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out release files
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify downloads
+        working-directory: release-assets/macos-v2.1.5
+        run: sha256sum --strict --check LV1Bridge-2.1.5-SHA256SUMS.txt
+      - name: Publish release and downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag=macos-v2.1.5
+          if gh release view "$tag" --json isDraft > "$RUNNER_TEMP/lv1-release.json" 2>/dev/null; then
+            if [ "$(jq -r .isDraft "$RUNNER_TEMP/lv1-release.json")" = false ]; then
+              echo "Release $tag is already published; keeping it unchanged."
+              exit 0
+            fi
+          else
+            gh release create "$tag" --draft --target "$GITHUB_SHA" \
+              --title "LV1 Bridge for macOS 2.1.5" \
+              --notes-file docs/releases/macos-v2.1.5.md
+          fi
+          gh release upload "$tag" \
+            release-assets/macos-v2.1.5/LV1Bridge-macOS-Installer-2.1.5.pkg \
+            release-assets/macos-v2.1.5/LV1-Bridge-Mac-App-2.1.5.zip \
+            release-assets/macos-v2.1.5/LV1-Bridge-StreamDeck-Mac-2.1.5.zip \
+            release-assets/macos-v2.1.5/LV1Bridge-macOS-Source-2.1.5.zip \
+            release-assets/macos-v2.1.5/LV1-Bridge-XL.streamDeckProfile \
+            release-assets/macos-v2.1.5/README-HE-2.1.5.md \
+            release-assets/macos-v2.1.5/LV1Bridge-2.1.5-SHA256SUMS.txt --clobber
+          gh release edit "$tag" --draft=false --latest

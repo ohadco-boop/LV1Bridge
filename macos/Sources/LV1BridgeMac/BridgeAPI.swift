@@ -40,7 +40,7 @@ final class BridgeAPI {
     private func handle(_ command: String) -> String {
         if command == "PING" { return "PONG" }
         if command == "STATE" {
-            return (["STATE", String(engine.activeAux)] + engine.auxNames.map(pack) + engine.userNames.map(pack)).joined(separator: "|")
+            return (["STATE", String(engine.activeAux)] + engine.auxNames.map(pack) + engine.userNames.map(pack) + engine.fxNames.map(pack)).joined(separator: "|")
         }
         if command == "METERS" {
             var fields = ["METERS", engine.receivedFromLV1 ? "1" : "0"]
@@ -55,6 +55,9 @@ final class BridgeAPI {
             DispatchQueue.main.async { self.engine.selectAux(value - 1) }; return "OK"
         }
         if command == "MIX" { DispatchQueue.main.async { self.engine.returnToMix() }; return "OK" }
+        if parts.count == 2, let value = Int(parts[1]), parts[0] == "FX", (1...8).contains(value) {
+            DispatchQueue.main.async { self.engine.selectFX(value - 1) }; return "OK"
+        }
         if parts.count == 2, let value = Int(parts[1]), parts[0] == "USER", (1...16).contains(value) {
             DispatchQueue.main.async { self.engine.triggerUser(value) }; return "OK"
         }

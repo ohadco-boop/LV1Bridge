@@ -2,6 +2,7 @@ import Foundation
 
 enum DeckCommand {
     case aux(Int) // zero-based monitor send, 0...23
+    case fx(Int) // zero-based FX send, 0...7; feedback uses slots 24...31
     case mix
     case user(Int) // one-based user key, 1...16
 }
@@ -20,16 +21,25 @@ struct DeckControlState {
     mutating func steps(for command: DeckCommand) -> [DeckStep] {
         var steps: [DeckStep] = []
         switch command {
-        case .aux(let aux):
-            guard (0..<24).contains(aux) else { return [] }
-            if activeAux == aux { return self.steps(for: .mix) }
+        case .aux, .fx:
+            let selection: Int, bank: UInt8, key: UInt8
+            switch command {
+            case .aux(let aux):
+                guard (0..<24).contains(aux) else { return [] }
+                selection = aux; bank = UInt8(10 + aux / 8); key = UInt8(aux % 8)
+            case .fx(let fx):
+                guard (0..<8).contains(fx) else { return [] }
+                selection = 24 + fx; bank = 9; key = UInt8(fx)
+            default: return []
+            }
+            if activeAux == selection { return self.steps(for: .mix) }
             if userMode {
                 steps += [.pulse(0x70), .wait(120)]
                 userMode = false
             }
             if activeAux < 0 { steps += [.pulse(0x57), .wait(220)] }
-            steps += [.pulse(UInt8(10 + aux / 8)), .wait(120), .pulse(UInt8(aux % 8))]
-            activeAux = aux
+            steps += [.pulse(bank), .wait(120), .pulse(key)]
+            activeAux = selection
         case .mix:
             if activeAux >= 0 { steps += [.pulse(0x57)] }
             activeAux = -1

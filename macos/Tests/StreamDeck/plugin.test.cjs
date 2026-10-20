@@ -4,13 +4,14 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const sent = [], requests = [];
-let payload = '', fetchCount = 0, blockedFetch = null;
+let payload = '', fetchCount = 0, blockedFetch = null, onFetch = () => {};
 const context = vm.createContext({
-  AbortController, setTimeout, clearTimeout,
+  AbortController, setTimeout, clearTimeout, setInterval, clearInterval, console,
   atob: s => Buffer.from(s, 'base64').toString('binary'),
   btoa: s => Buffer.from(s, 'binary').toString('base64'),
   fetch: async url => {
     requests.push(decodeURIComponent(new URL(url).pathname.slice(1)));
+    onFetch(requests.at(-1));
     fetchCount++;
     if (blockedFetch) await blockedFetch;
     return {text: async () => payload};
@@ -69,9 +70,10 @@ function lastSVG() {
   assert.match(lastSVG(), />Next bank</);
 
   // Monitor and user-key labels refresh through STATE, independently of VU.
-  const controlState = (aux, user) => ['STATE', '-1',
+  const controlState = (aux, user, active = -1) => ['STATE', String(active),
     ...Array.from({length: 24}, (_, i) => Buffer.from(i ? `MON ${i + 1}` : aux).toString('base64')),
-    ...Array.from({length: 16}, (_, i) => Buffer.from(i ? `USER ${i + 1}` : user).toString('base64'))
+    ...Array.from({length: 16}, (_, i) => Buffer.from(i ? `USER ${i + 1}` : user).toString('base64')),
+    ...Array.from({length: 8}, (_, i) => Buffer.from(i ? `FX ${i + 1}` : 'Reverb').toString('base64'))
   ].join('|');
   vm.runInContext("page='aux';", context);
   payload = controlState('OHAD', 'Talkback');
@@ -109,5 +111,41 @@ function lastSVG() {
   vm.runInContext("page='meters';", context);
   await vm.runInContext('press(0)', context);
   assert.deepEqual(requests.filter(x => /^(AUX |USER |MIX$)/.test(x)), []);
-  console.log('Stream Deck: live MON/USER/VU labels, meter rendering, serialized polling, and one command per press/release passed.');
+
+  // FX page uses 8 distinct sends, without changing MON numbering.
+  vm.runInContext("keys.clear();keys.set('key1',{slot:0});page='aux';", context);
+  payload = controlState('OHAD', 'Talkback', 24);
+  await vm.runInContext('press(29)', context);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.match(lastSVG(), />Reverb</);
+  assert.match(lastSVG(), /#14532d/);
+  requests.length = 0;
+  for(let i=0;i<8;i++) await vm.runInContext(`press(${i})`, context);
+  await vm.runInContext('press(8)', context);
+  assert.deepEqual(requests.filter(x=>/^FX /.test(x)), Array.from({length:8},(_,i)=>`FX ${i+1}`));
+  assert.equal(requests.filter(x=>/^(AUX |USER |MIX$)/.test(x)).length,0);
+
+  // Real Node timers must retrieve state that arrives after the command's ACK,
+  // without another button press. This regresses the hidden HTML runtime bug.
+  const manifest = JSON.parse(fs.readFileSync(path.join(path.dirname(plugin),'manifest.json')));
+  assert.equal(manifest.CodePath,'plugin.js');
+  assert.equal(manifest.Nodejs.Version,'24');
+  context.WebSocket = class {
+    constructor() { this.readyState=1; }
+    send(message) { sent.push(JSON.parse(message)); }
+  };
+  payload = controlState('OHAD','Talkback');
+  requests.length=0;
+  vm.runInContext("keys.clear();keys.set('key1',{slot:2});page='aux';connectElgatoStreamDeckSocket('1234','test','registerPlugin');ws.onopen();",context);
+  await new Promise(resolve=>setImmediate(resolve));
+  onFetch = command => {
+    if(command==='AUX 3') setTimeout(()=>{payload=controlState('OHAD','Talkback',2)},120);
+  };
+  await vm.runInContext('press(2)',context);
+  await new Promise(resolve=>setTimeout(resolve,650));
+  vm.runInContext('ws.onclose()',context);
+  assert.match(lastSVG(), /#14532d/, 'Selected key updates after delayed backend completion');
+  assert.ok(requests.filter(x=>x==='STATE').length>=3, 'Polling continues without a key event');
+  assert.deepEqual(requests.filter(x=>/^AUX /.test(x)),['AUX 3']);
+  console.log('Stream Deck: delayed selection feedback, Node polling, FX page, names, meters and one command per press passed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

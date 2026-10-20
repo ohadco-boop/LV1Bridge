@@ -25,18 +25,18 @@ struct SessionMetadataTests {
             create table ovv_layer_track(layer_id integer, strip_index integer, obj_id integer);
             create table user_keys(key_index integer primary key, uk_friendly_name text);
             insert into surface_property_int values(2,12,4),(2,14,0);
-            insert into object values(10,0,0,''),(11,0,1,'Legacy name'),(26,0,16,''),(50,25,0,'');
+            insert into object values(10,0,0,''),(11,0,1,'Legacy name'),(26,0,16,''),(50,25,0,''),(60,2,0,''),(67,2,7,'');
             insert into chainer values(10,2),(11,1),(26,1),(50,2);
             insert into snapshot_chainer values
               (10,-1,'123'),(10,7,'Old saved name'),(11,-1,'Active vocal'),
-              (26,-1,'Bank two'),(50,-1,'Singer monitor');
+              (26,-1,'Bank two'),(50,-1,'Singer monitor'),(60,-1,'Reverb'),(67,-1,'Delay');
             insert into ovv_layer values(100,2);
             insert into ovv_layer_track values(100,0,26),(100,1,10);
             insert into user_keys values(0,'Talkback'),(15,'');
             """, at: path)
         var names: [String] = [], mono: [Bool] = []
-        var aux: [String] = [], users: [String] = []
-        let metadata = SessionMetadata(path: path, controlsUpdate: { aux = $0; users = $1 }) {
+        var aux: [String] = [], users: [String] = [], fx: [String] = []
+        let metadata = SessionMetadata(path: path, controlsUpdate: { aux = $0; users = $1; fx = $2 }) {
             names = $0; mono = $1
         }
         metadata.reload()
@@ -47,6 +47,7 @@ struct SessionMetadataTests {
         #expect(names[2] == "—")
         #expect(aux.count == 24 && aux[0] == "Singer monitor" && aux[23] == "MON 24")
         #expect(users.count == 16 && users[0] == "Talkback" && users[15] == "USER 16")
+        #expect(fx.count == 8 && fx[0] == "Reverb" && fx[1] == "FX 2" && fx[7] == "Delay")
 
         // Change only the live name: the saved scene and channel layout stay put.
         let renamed = "שירה | Lead\t&\n\"Vocal\""
@@ -57,10 +58,12 @@ struct SessionMetadataTests {
         try execute("""
             update snapshot_chainer set name='OHAD' where chainer_id=50 and snapshot_id=-1;
             update user_keys set uk_friendly_name='\(renamed)' where key_index=0;
+            update snapshot_chainer set name='\(renamed)' where chainer_id=60 and snapshot_id=-1;
             """, at: path)
         metadata.reload()
         #expect(aux[0] == "OHAD")
         #expect(users[0] == renamed)
+        #expect(fx[0] == renamed)
 
         try execute("update surface_property_int set value=1 where surface=2 and property=14;", at: path)
         metadata.reload()
@@ -83,6 +86,7 @@ struct SessionMetadataTests {
         #expect(names[0] == "OHAD")
         #expect(mono[0] == false)
         #expect(aux[0] == "OHAD", "MON labels do not depend on the visible VU bank")
+        #expect(fx[0] == renamed && fx[7] == "Delay", "FX labels retain their own bus indices")
         try execute("""
             update snapshot_chainer set name='' where chainer_id=50 and snapshot_id=-1;
             update user_keys set uk_friendly_name='' where key_index=0;

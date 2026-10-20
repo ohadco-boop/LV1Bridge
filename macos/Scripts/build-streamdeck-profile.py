@@ -18,9 +18,9 @@ def build():
     page_id = identifier("page")
     pinned_id = identifier("pinned")
     actions = {}
-    # Slots 0–23 are AUX sends; 24–28 are MIX, USER, font −/+, and VU.
-    # The remaining three keys are intentionally available to the user.
-    for slot in range(29):
+    # Slots 0–23 are MON sends; 24–29 are MIX, USER, font −/+, VU, and FX.
+    # The remaining two keys are intentionally available to the user.
+    for slot in range(30):
         column, row = slot % 8, slot // 8
         actions[f"{column},{row}"] = {
             "ActionID": identifier(f"key-{slot}"),

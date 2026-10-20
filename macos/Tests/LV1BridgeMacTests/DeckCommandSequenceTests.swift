@@ -63,8 +63,23 @@ struct DeckCommandSequenceTests {
 
     @Test func testInvalidCommandsHaveNoEffects() {
         var state = DeckControlState()
-        for command in [DeckCommand.aux(-1), .aux(24), .user(0), .user(17)] {
+        for command in [DeckCommand.aux(-1), .aux(24), .fx(-1), .fx(8), .user(0), .user(17)] {
             #expect(state.steps(for: command) == [])
+            #expect(state.activeAux == -1)
+        }
+    }
+
+    @Test func fxSelectionUsesSeparateBankAndFeedbackIndices() {
+        for fx in 0..<8 {
+            var state = DeckControlState()
+            #expect(state.steps(for: .fx(fx)) == [
+                .pulse(0x57), .wait(220), .pulse(9), .wait(120), .pulse(UInt8(fx))
+            ])
+            #expect(state.activeAux == 24 + fx)
+            // MON 1 and FX 1 have the same local key, but are different selections.
+            #expect(state.steps(for: .aux(0)) == [.pulse(10), .wait(120), .pulse(0)])
+            #expect(state.steps(for: .fx(fx)) == [.pulse(9), .wait(120), .pulse(UInt8(fx))])
+            #expect(state.steps(for: .fx(fx)) == [.pulse(0x57)])
             #expect(state.activeAux == -1)
         }
     }

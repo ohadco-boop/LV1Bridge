@@ -7,7 +7,7 @@
         {
           "Image": "images/key",
           "TitleAlignment": "middle",
-          "FontSize": "16",
+          "FontSize": 16,
           "TitleColor": "#FFFFFF"
         }
       ],
@@ -18,11 +18,14 @@
     }
   ],
   "Author": "LV1 Tools",
-  "CodePath": "plugin.html",
+  "CodePath": "plugin.js",
+  "Nodejs": {
+    "Version": "24"
+  },
   "Description": "Controls LV1 AUX sends, user keys and live VU meters through LV1 Bridge for macOS.",
   "Name": "LV1 Fader Bank Bridge",
   "Icon": "images/plugin",
-  "Version": "2.1.4",
+  "Version": "2.1.5",
   "Profiles": [
     {
       "Name": "Profiles/LV1 Bridge XL",
@@ -40,6 +43,7 @@
     }
   ],
   "Software": {
-    "MinimumVersion": "6.4"
-  }
+    "MinimumVersion": "7.1"
+  },
+  "UUID": "com.lv1.faderbank"
 }

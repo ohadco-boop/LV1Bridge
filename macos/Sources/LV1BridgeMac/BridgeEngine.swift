@@ -17,6 +17,7 @@ final class BridgeEngine {
     private(set) var names = (1...16).map { "CH \($0)" }
     private(set) var auxNames = (1...24).map { "MON \($0)" }
     private(set) var userNames = (1...16).map { "USER \($0)" }
+    private(set) var fxNames = (1...8).map { "FX \($0)" }
     private(set) var meters = MeterFrame()
     private(set) var mono = Array(repeating: true, count: 16)
     private(set) var receivedFromLV1 = false
@@ -48,11 +49,12 @@ final class BridgeEngine {
             receivedFromLV1 = true
             forwardNames(names); onStateChanged?()
         }
-        metadata = SessionMetadata(controlsUpdate: { [weak self] aux, users in
+        metadata = SessionMetadata(controlsUpdate: { [weak self] aux, users, fx in
             guard let self else { return }
-            let changed = self.auxNames != aux || self.userNames != users
+            let changed = self.auxNames != aux || self.userNames != users || self.fxNames != fx
             self.auxNames = aux
             self.userNames = users
+            self.fxNames = fx
             if changed { self.onStateChanged?() }
         }) { [weak self] values, mono in
             guard let self else { return }
@@ -206,6 +208,10 @@ final class BridgeEngine {
     }
 
     func returnToMix() { deckCommands.enqueue(.mix) }
+    func selectFX(_ fx: Int) {
+        guard (0..<8).contains(fx) else { return }
+        deckCommands.enqueue(.fx(fx))
+    }
     func triggerUser(_ index: Int) {
         guard (1...16).contains(index) else { return }
         deckCommands.enqueue(.user(index))

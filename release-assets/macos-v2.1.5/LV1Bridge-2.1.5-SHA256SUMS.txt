@@ -1,0 +1,6 @@
+72876c2feb8595fd73aee3daafe6d0d361eee5166064f8b45af73153a971326d  LV1Bridge-macOS-Installer-2.1.5.pkg
+e69b4458279a7e61b4e1647ff6dbef97e18b48dc1177ba24f7b88c384f0d7614  LV1-Bridge-Mac-App-2.1.5.zip
+a2632dceb751fdc292adce520525017262508b0ebca3c8d61fe8d77f3055a6d0  LV1-Bridge-StreamDeck-Mac-2.1.5.zip
+12fb9c3a5090d8130a83165975d8773043d1be06bc2e106d0df870d8461efac8  LV1Bridge-macOS-Source-2.1.5.zip
+3f8558d1d1460053a86af7cd4c0683d70dddbd166d99d21adddf0f8c059cd2c7  README-HE-2.1.5.md
+b3b7e8232b1244497da2d933ba9bc220a0f2dbd9acea3dba9782e9cdab5b16f4  LV1-Bridge-XL.streamDeckProfile

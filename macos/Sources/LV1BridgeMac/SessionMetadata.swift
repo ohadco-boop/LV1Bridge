@@ -2,7 +2,7 @@ import Foundation
 
 final class SessionMetadata {
     typealias Update = ([String], [Bool]) -> Void
-    typealias ControlsUpdate = ([String], [String]) -> Void
+    typealias ControlsUpdate = ([String], [String], [String]) -> Void
     private struct Strip: Decodable {
         let kind: String
         let strip: Int
@@ -47,9 +47,11 @@ final class SessionMetadata {
         let strips = rows.filter { $0.kind == "strip" }
         let aux = rows.filter { $0.kind == "aux" }
         let users = rows.filter { $0.kind == "user" }
+        let fx = rows.filter { $0.kind == "fx" }
         guard strips.count == 16, Set(strips.map(\.strip)) == Set(0..<16),
               aux.count == 24, Set(aux.map(\.strip)) == Set(0..<24),
-              users.count == 16, Set(users.map(\.strip)) == Set(0..<16) else { return }
+              users.count == 16, Set(users.map(\.strip)) == Set(0..<16),
+              fx.count == 8, Set(fx.map(\.strip)) == Set(0..<8) else { return }
         var names = Array(repeating: "—", count: 16), mono = Array(repeating: true, count: 16)
         for row in strips {
             names[row.strip] = row.name
@@ -57,7 +59,8 @@ final class SessionMetadata {
         }
         update(names, mono)
         controlsUpdate?(aux.sorted { $0.strip < $1.strip }.map(\.name),
-                        users.sorted { $0.strip < $1.strip }.map(\.name))
+                        users.sorted { $0.strip < $1.strip }.map(\.name),
+                        fx.sorted { $0.strip < $1.strip }.map(\.name))
     }
 
     // LV1 persists the visible Mixer 1 layer and page in surface 2.  Modes 4 and 5
@@ -145,6 +148,13 @@ final class SessionMetadata {
     select 'user',s.strip,coalesce(nullif(k.uk_friendly_name,''),'USER '||(s.strip+1)),0
     from slots s
     left join user_keys k on k.key_index=s.strip
+    union all
+    select 'fx',s.strip,
+      coalesce(nullif(active.name,''),nullif(o.name,''),'FX '||(s.strip+1)),0
+    from slots s
+    left join object o on o.obj_type=2 and o.obj_index=s.strip
+    left join snapshot_chainer active on active.chainer_id=o.id and active.snapshot_id=-1
+    where s.strip<8
     order by kind,strip;
     """
 }

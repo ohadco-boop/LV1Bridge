@@ -8,7 +8,7 @@
 <key>CFBundleName</key><string>LV1Bridge_Control 17.3.50</string>
 <key>CFBundlePackageType</key><string>wvPT</string>
 <key>CFBundleSignature</key><string>APPL</string>
-<key>CFBundleGetInfoString</key><string>17.3.50.135 Build 317915 · LV1 Bridge 2.1.4</string>
+<key>CFBundleGetInfoString</key><string>17.3.50.135 Build 317915 · LV1 Bridge 2.1.5</string>
 <key>CFBundleShortVersionString</key><string>1.0.0</string>
 <key>CFBundleVersion</key><string>1</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
